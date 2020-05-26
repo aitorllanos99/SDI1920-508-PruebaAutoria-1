@@ -21,7 +21,7 @@ public class User {
 
 	
 	private boolean requestable = true;
-
+	private boolean requestableFavourite = true;
 	@OneToMany(mappedBy = "from")
 	private Set<FriendRequest> sentRequests;
 	@OneToMany(mappedBy = "to")
@@ -52,6 +52,22 @@ public class User {
 
 	public void setName(String name) {
 		this.name = name;
+	}
+
+	public boolean isRequestableFavourite() {
+		return requestableFavourite;
+	}
+
+	public void setRequestableFavourite(boolean requestableFavourite) {
+		this.requestableFavourite = requestableFavourite;
+	}
+
+	public Set<Friend> getFriends() {
+		return friends;
+	}
+
+	public void setFriends(Set<Friend> friends) {
+		this.friends = friends;
 	}
 
 	public String getLastName() {

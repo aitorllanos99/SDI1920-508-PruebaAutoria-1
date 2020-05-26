@@ -1,8 +1,12 @@
 package com.uniovi.controllers;
 
 import java.security.Principal;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Set;
+
+import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -17,6 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.uniovi.entities.Favourite;
 import com.uniovi.entities.Friend;
 import com.uniovi.entities.FriendRequest;
 import com.uniovi.entities.User;
@@ -41,6 +46,8 @@ public class UsersController {
 	private FriendRequestService friendRequestsService;
 	@Autowired
 	private FriendsService friendsService;
+	@Autowired
+	private HttpSession httpSession;
 
 	@RequestMapping("/user/list")
 	public String getListado(Model model, Pageable pageable,
@@ -103,12 +110,61 @@ public class UsersController {
 		User user = usersService.getUser(principal.getName());
 		List<User> users = new LinkedList<User>();
 		friendsService.listByUser(pageable, user).getContent().forEach(c -> users.add(c.getFriend()));
-
+		Set<Favourite> favouriteList = (Set<Favourite>) httpSession.getAttribute("favouriteList");
+		if (favouriteList == null) {
+			favouriteList = new HashSet<Favourite>();
+		}
+		for(Favourite f: favouriteList)
+			System.out.println(f);
+		
+		httpSession.setAttribute("favouriteList", favouriteList);
+		model.addAttribute("favouriteList", favouriteList);
 		Page<User> usersP = new PageImpl<User>(users);
+		for(User f: usersP)
+			System.out.println(f);
 		model.addAttribute("usersList", usersP.getContent());
 		model.addAttribute("page", usersP);
 
 		return "user/listFriends";
+	}
+
+	@RequestMapping("/user/listFavourites")
+	public String getListadoFavoritos(Model model, Pageable pageable, Principal principal) {
+		Set<Favourite> favouriteList = (Set<Favourite>) httpSession.getAttribute("favouriteList");
+		if (favouriteList == null) {
+			favouriteList = new HashSet<Favourite>();
+		}
+		model.addAttribute("favouriteList", favouriteList);
+		for(Favourite f: favouriteList)
+			System.out.println(f);
+		return "user/listFavourites";
+	}
+
+	@RequestMapping("/addFavourite/{email}")
+	public String addFavourite(Principal principal, Model model, @PathVariable String email) {
+		User userFriend = usersService.getUser(email);
+		User user = usersService.getUser(principal.getName());
+		Favourite favourite = new Favourite(userFriend, user);
+		Set<Favourite> favouriteList = (Set<Favourite>) httpSession.getAttribute("favouriteList");
+		favouriteList.add(favourite);
+		userFriend.setRequestableFavourite(false);
+		model.addAttribute("favouriteList", favouriteList);
+		return "redirect:/user/listFavourites";
+	}
+	
+
+	@RequestMapping("/deleteFavourite/{email}")
+	public String deleteFavourite(Principal principal, Model model, @PathVariable String email) {
+		User userFriend = usersService.getUser(email);
+		User user = usersService.getUser(principal.getName());
+	
+		Set<Favourite> favouriteList = (Set<Favourite>) httpSession.getAttribute("favouriteList");
+		for(Favourite f: favouriteList)
+			if(f.getFriend().getEmail().contentEquals(userFriend.getEmail()))
+				favouriteList.remove(f);
+		userFriend.setRequestableFavourite(true);
+		model.addAttribute("favouriteList", favouriteList);
+		return "redirect:/user/listFavourites";
 	}
 
 	@RequestMapping("/user/listPetitions")

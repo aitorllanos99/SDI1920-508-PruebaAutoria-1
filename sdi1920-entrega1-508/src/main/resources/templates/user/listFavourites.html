@@ -17,12 +17,10 @@
 		<p th:text="#{user.list.p}"></p>
 		<div class="table-responsive">
 			<table class="table table-hover" th:fragment="tableUsers"
-				id="tableUsers">
+					id="tableUsers">
 				<thead>
 					<tr>
 						<th th:text="#{user.list.email}"></th>
-						<th th:text="#{user.list.name}"></th>
-						<th th:text="#{user.list.lastName}"></th>
 						<th class="col-md-1"></th>
 						<th class="col-md-1"></th>
 						<th class="col-md-1"></th>
@@ -31,24 +29,12 @@
 					</tr>
 				</thead>
 				<tbody>
-					<tr th:each="user : ${usersList}">
-						<td th:text="${user.email}"></td>
-						<td th:text="${user.name}"></td>
-						<td th:text="${user.lastName}"></td>
-						<td><a th:href="${'/publication/list/'+ user.email}"
-							th:text="#{user.listFriends.seePublications}"></a></td>
-
-						<td><a
-							th:text="#{userlist.favourites.send}"
-							th:href="${'/addFavourite/' + user.email}"> </a></td>
-						<td><a 
-							th:text="#{userlist.favourites.delete}"
-							th:href="${'/deleteFavourite/' + user.email}"></td>
+					<tr th:each="user : ${favouriteList}">
+						<td th:text="${user.friend}"></td>
 					</tr>
 				</tbody>
 			</table>
 		</div>
-		<footer th:replace="fragments/pagination" />
 	</div>
 	<footer th:replace="fragments/footer" />
 </body>
